@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API对比工具</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>API对比工具</h1>
+            <button class="clear-all-btn" onclick="clearAllHistory()">🗑️ 清除所有历史</button>
+        </header>
+        
+        <div class="main-content">
+            <!-- 左侧模块 -->
+            <div class="api-module">
+                <div class="module-header">
+                    <h2>左侧API</h2>
+                    <div class="header-actions">
+                        <button class="config-btn" onclick="showApiConfig('official')">⚙️ 配置</button>
+                        <button class="export-btn" onclick="exportHistory('official')">导出历史</button>
+                    </div>
+                </div>
+                
+                <div class="input-section">
+                    <textarea 
+                        id="official-input" 
+                        placeholder="请输入您的问题..."
+                        rows="3"
+                    ></textarea>
+                    <button onclick="sendMessage('official')" class="send-btn">发送</button>
+                </div>
+                
+                <div class="history-section">
+                    <h3>对话历史</h3>
+                    <div id="official-history" class="history-container"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧模块 -->
+            <div class="api-module">
+                <div class="module-header">
+                    <h2>右侧API</h2>
+                    <div class="header-actions">
+                        <button class="config-btn" onclick="showApiConfig('third-party')">⚙️ 配置</button>
+                        <button class="export-btn" onclick="exportHistory('third-party')">导出历史</button>
+                    </div>
+                </div>
+                
+                <div class="input-section">
+                    <textarea 
+                        id="third-party-input" 
+                        placeholder="请输入您的问题..."
+                        rows="3"
+                    ></textarea>
+                    <button onclick="sendMessage('third-party')" class="send-btn">发送</button>
+                </div>
+                
+                <div class="history-section">
+                    <h3>对话历史</h3>
+                    <div id="third-party-history" class="history-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 左侧API配置模态框 -->
+    <div id="official-config-modal" class="config-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>左侧API配置</h3>
+                <button class="close-btn" onclick="closeApiConfig('official')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="config-form">
+                    <div class="form-group">
+                        <label>AI模型</label>
+                        <select id="official-ai-model" onchange="updateModelConfig('official')">
+                            <option value="gemini" selected>Gemini</option>
+                            <option value="openai">OpenAI GPT</option>
+                            <option value="claude">Claude</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>HTTP方法</label>
+                        <select id="official-http-method">
+                            <option value="POST" selected>POST</option>
+                            <option value="GET">GET</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API名称</label>
+                        <input type="text" id="official-api-name" placeholder="请输入API名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label>请求URL</label>
+                        <input type="text" id="official-api-url" placeholder="https://api.example.com/v1/endpoint">
+                    </div>
+                    <div class="form-group">
+                        <label>Content-Type</label>
+                        <select id="official-content-type">
+                            <option value="application/json" selected>application/json</option>
+                            <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                            <option value="text/plain">text/plain</option>
+                            <option value="application/xml">application/xml</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>请求头</label>
+                        <div class="headers-list" id="official-headers-list">
+                            <!-- 动态生成header项 -->
+                        </div>
+                        <button type="button" class="add-header-btn" onclick="addHeaderRow('official')">+ 添加Header</button>
+                        <div class="help-text">
+                            <small>
+                                <strong>常见请求头:</strong> Authorization, X-API-Key, Accept, User-Agent
+                            </small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>URL参数</label>
+                        <div class="params-list" id="official-params-list">
+                            <!-- 动态生成param项 -->
+                        </div>
+                        <button type="button" class="add-param-btn" onclick="addParamRow('official')">+ 添加参数</button>
+                        <div class="help-text">
+                            <small>
+                                <strong>常见参数:</strong> key, token, api_key, version, format
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="save-btn" onclick="saveApiConfig('official')">保存</button>
+                <button class="close-btn" onclick="closeApiConfig('official')">取消</button>
+            </div>
+        </div>
+    </div>
+    <!-- 右侧API配置模态框 -->
+    <div id="third-party-config-modal" class="config-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>右侧API配置</h3>
+                <button class="close-btn" onclick="closeApiConfig('third-party')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="config-form">
+                    <div class="form-group">
+                        <label>AI模型</label>
+                        <select id="third-party-ai-model" onchange="updateModelConfig('third-party')">
+                            <option value="gemini" selected>Gemini</option>
+                            <option value="openai">OpenAI GPT</option>
+                            <option value="claude">Claude</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>HTTP方法</label>
+                        <select id="third-party-http-method">
+                            <option value="POST" selected>POST</option>
+                            <option value="GET">GET</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API名称</label>
+                        <input type="text" id="third-party-api-name" placeholder="请输入API名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label>请求URL</label>
+                        <input type="text" id="third-party-api-url" placeholder="https://api.example.com/v1/endpoint">
+                    </div>
+                    <div class="form-group">
+                        <label>Content-Type</label>
+                        <select id="third-party-content-type">
+                            <option value="application/json" selected>application/json</option>
+                            <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                            <option value="text/plain">text/plain</option>
+                            <option value="application/xml">application/xml</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>请求头</label>
+                        <div class="headers-list" id="third-party-headers-list">
+                            <!-- 动态生成header项 -->
+                        </div>
+                        <button type="button" class="add-header-btn" onclick="addHeaderRow('third-party')">+ 添加Header</button>
+                        <div class="help-text">
+                            <small>
+                                <strong>常见请求头:</strong> Authorization, X-API-Key, Accept, User-Agent
+                            </small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>URL参数</label>
+                        <div class="params-list" id="third-party-params-list">
+                            <!-- 动态生成param项 -->
+                        </div>
+                        <button type="button" class="add-param-btn" onclick="addParamRow('third-party')">+ 添加参数</button>
+                        <div class="help-text">
+                            <small>
+                                <strong>常见参数:</strong> key, token, api_key, version, format
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="save-btn" onclick="saveApiConfig('third-party')">保存</button>
+                <button class="close-btn" onclick="closeApiConfig('third-party')">取消</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
